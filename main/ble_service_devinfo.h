@@ -1,5 +1,6 @@
 #ifndef DEVINFO_SERVICE_H_
 #define DEVINFO_SERVICE_H_
+
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
@@ -58,9 +59,8 @@ enum {
   DEVINFO_SERV_NUM_ATTR,
 };
 
-extern const esp_gatts_attr_db_t devinfo_service_gatt_db[DEVINFO_SERV_NUM_ATTR];
+#define DEVINFO_SERVICE_UUID_LEN (16)
 
-extern const esp_ble_adv_data_t devinfo_service_adv_data;
-extern const esp_ble_adv_data_t devinfo_service_scan_rsp_data;
+extern const esp_gatts_attr_db_t devinfo_service_gatt_db[DEVINFO_SERV_NUM_ATTR];
 
 #endif /* DEVINFO_SERVICE_H_ */

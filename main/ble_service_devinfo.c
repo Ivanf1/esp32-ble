@@ -5,6 +5,7 @@
 static const uint16_t primary_service_uuid = ESP_GATT_UUID_PRI_SERVICE;
 static const uint16_t character_declaration_uuid = ESP_GATT_UUID_CHAR_DECLARE;
 static const uint8_t char_prop_read = ESP_GATT_CHAR_PROP_BIT_READ;
+// static const uint8_t char_prop_read_notify = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
 
 const uint16_t uuid_DEVINFO_SERV = ESP_GATT_UUID_DEVICE_INFO_SVC;
 const uint16_t uuid_SYSTEM_ID = ESP_GATT_UUID_SYSTEM_ID;
@@ -17,12 +18,11 @@ const uint16_t uuid_MANU_NAME = ESP_GATT_UUID_MANU_NAME;
 const uint16_t uuid_IEEE_DATA = ESP_GATT_UUID_IEEE_DATA;
 const uint16_t uuid_PNP_ID = ESP_GATT_UUID_PNP_ID;
 
-#define DEVINFO_SERVICE_UUID_LEN (16)
-static uint8_t devinfo_service_uuid[DEVINFO_SERVICE_UUID_LEN] = {
-    /* LSB <--------------------------------------------------------------------------------> MSB */
-    // first uuid, 16bit, [12],[13] is the value
-    0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0x0A, 0x18, 0x00, 0x00,
-};
+// uint8_t devinfo_service_uuid[DEVINFO_SERVICE_UUID_LEN] = {
+//     /* LSB <--------------------------------------------------------------------------------> MSB */
+//     // first uuid, 16bit, [12],[13] is the value
+//     0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0x0A, 0x18, 0x00, 0x00,
+// };
 
 // System ID characteristic
 #define DEVINFO_SYSTEM_ID_LEN (8)
@@ -168,38 +168,4 @@ const esp_gatts_attr_db_t devinfo_service_gatt_db[DEVINFO_SERV_NUM_ATTR] = {
                             {ESP_UUID_LEN_16, (uint8_t *)&uuid_PNP_ID, ESP_GATT_PERM_READ, ESP_GATT_MAX_ATTR_LEN,
                              DEVINFO_PNP_ID_LEN, (uint8_t *)devInfoPnpId}},
 
-};
-
-/* The length of adv data must be less than 31 bytes */
-const esp_ble_adv_data_t devinfo_service_adv_data = {
-    .set_scan_rsp = false,
-    .include_name = true,
-    .include_txpower = true,
-    .min_interval = 0x0006, // slave connection min interval, Time = min_interval * 1.25 msec
-    .max_interval = 0x0010, // slave connection max interval, Time = max_interval * 1.25 msec
-    .appearance = 0x00,
-    .manufacturer_len = 0,       // TEST_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = NULL, // test_manufacturer,
-    .service_data_len = 0,
-    .p_service_data = NULL,
-    .service_uuid_len = sizeof(devinfo_service_uuid),
-    .p_service_uuid = devinfo_service_uuid,
-    .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
-
-// scan response data
-const esp_ble_adv_data_t devinfo_service_scan_rsp_data = {
-    .set_scan_rsp = true,
-    .include_name = true,
-    .include_txpower = true,
-    .min_interval = 0x0006,
-    .max_interval = 0x0010,
-    .appearance = 0x00,
-    .manufacturer_len = 0,       // TEST_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = NULL, //&test_manufacturer[0],
-    .service_data_len = 0,
-    .p_service_data = NULL,
-    .service_uuid_len = sizeof(devinfo_service_uuid),
-    .p_service_uuid = devinfo_service_uuid,
-    .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };

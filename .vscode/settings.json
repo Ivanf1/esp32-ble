@@ -9,10 +9,33 @@
   "idf.toolsPathWin": "C:\\Users\\capob\\.espressif",
   "idf.flashType": "UART",
   "idf.portWin": "COM5",
-  "cSpell.words": ["creat", "DEVINFO", "Espressif", "gattc", "GATTS", "LOGI", "SRCS", "txpower"],
+  "cSpell.words": [
+    "atten",
+    "BITWIDTH",
+    "bluedroid",
+    "creat",
+    "DEVINFO",
+    "efuse",
+    "Espressif",
+    "gattc",
+    "GATTS",
+    "gpio",
+    "LOGI",
+    "Multisampling",
+    "SRCS",
+    "txpower",
+    "VREF"
+  ],
   "files.associations": {
     "*.js": "javascriptreact",
     "sdkconfig.h": "c",
-    "ble_service_devinfo.h": "c"
+    "ble_service_devinfo.h": "c",
+    "*.tcc": "c",
+    "unordered_map": "c",
+    "fstream": "c",
+    "istream": "c",
+    "numeric": "c",
+    "ostream": "c",
+    "sstream": "c"
   }
 }
