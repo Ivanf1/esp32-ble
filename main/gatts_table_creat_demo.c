@@ -38,7 +38,7 @@
 
 static uint8_t adv_config_done = 0;
 
-uint16_t analog_handle_table[HRS_IDX_NB];
+uint16_t analog_handle_table[ANALOG_SERV_NUM_ATTR];
 uint16_t devinfo_handle_table[DEVINFO_SERV_NUM_ATTR];
 
 notify_params_t notify_params = {0, 0, 0};
@@ -79,7 +79,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
 
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT
  */
-static struct gatts_profile_inst devinfo_profile_tab[PROFILE_NUM] = {
+static struct gatts_profile_inst gatts_profile_tab[PROFILE_NUM] = {
     [PROFILE_APP_IDX] =
         {
             .gatts_cb = gatts_profile_event_handler,
@@ -216,9 +216,10 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
       ESP_LOGE(GATTS_TABLE_TAG, "create attr DEVINFO table failed, error code = %x", create_attr_ret);
     }
 
-    create_attr_ret = esp_ble_gatts_create_attr_tab(analog_service_gatt_db, gatts_if, HRS_IDX_NB, SVC_INST_ID);
+    create_attr_ret =
+        esp_ble_gatts_create_attr_tab(analog_service_gatt_db, gatts_if, ANALOG_SERV_NUM_ATTR, SVC_INST_ID);
     if (create_attr_ret) {
-      ESP_LOGE(GATTS_TABLE_TAG, "create attr HRS table failed, error code = %x", create_attr_ret);
+      ESP_LOGE(GATTS_TABLE_TAG, "create attr ANALOG table failed, error code = %x", create_attr_ret);
     }
 
     break;
@@ -232,14 +233,14 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                param->write.len);
       esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
 
-      if (analog_handle_table[IDX_CHAR_CFG_A] == param->write.handle && param->write.len == 2) {
+      if (analog_handle_table[ANALOG_CHAR_CFG] == param->write.handle && param->write.len == 2) {
         uint16_t descr_value = param->write.value[1] << 8 | param->write.value[0];
 
         if (descr_value == 0x0001) {
           ESP_LOGI(GATTS_TABLE_TAG, "notify enable");
           notify_params.gatt_if = gatts_if;
           notify_params.conn_id = param->write.conn_id;
-          notify_params.attr_handle = analog_handle_table[IDX_CHAR_VAL_A];
+          notify_params.attr_handle = analog_handle_table[ANALOG_CHAR_VAL];
           if (analog_sample_task_handle == NULL) {
             xTaskCreate((TaskFunction_t)&analog_sample, "notifyTask", 2048, (void *)&notify_params, 5,
                         &analog_sample_task_handle);
@@ -251,7 +252,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             indicate_data[i] = i % 0xff;
           }
           // the size of indicate_data[] need less than MTU size
-          esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, analog_handle_table[IDX_CHAR_VAL_A],
+          esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, analog_handle_table[ANALOG_CHAR_VAL],
                                       sizeof(indicate_data), indicate_data, true);
         } else if (descr_value == 0x0000) {
           ESP_LOGI(GATTS_TABLE_TAG, "notify/indicate disable ");
@@ -329,18 +330,18 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         ESP_LOGI(GATTS_TABLE_TAG, "create attribute DEVINFO table successfully, the number handle = %d\n",
                  param->add_attr_tab.num_handle);
         memcpy(devinfo_handle_table, param->add_attr_tab.handles, sizeof(devinfo_handle_table));
-        esp_ble_gatts_start_service(devinfo_handle_table[IDX_SVC]);
+        esp_ble_gatts_start_service(devinfo_handle_table[DEVINFO_SERV]);
       }
     } else if (param->add_attr_tab.svc_uuid.uuid.uuid16 == 0x00FF) {
-      if (param->add_attr_tab.num_handle != HRS_IDX_NB) {
-        ESP_LOGE(GATTS_TABLE_TAG, "create attribute HRS table abnormally, num_handle (%d) \
-                        doesn't equal to HRS_IDX_NB(%d)",
-                 param->add_attr_tab.num_handle, HRS_IDX_NB);
+      if (param->add_attr_tab.num_handle != ANALOG_SERV_NUM_ATTR) {
+        ESP_LOGE(GATTS_TABLE_TAG, "create attribute ANALOG table abnormally, num_handle (%d) \
+                        doesn't equal to ANALOG_SERV_NUM_ATTR(%d)",
+                 param->add_attr_tab.num_handle, ANALOG_SERV_NUM_ATTR);
       } else {
-        ESP_LOGI(GATTS_TABLE_TAG, "create attribute HRS table successfully, the number handle = %d\n",
+        ESP_LOGI(GATTS_TABLE_TAG, "create attribute ANALOG table successfully, the number handle = %d\n",
                  param->add_attr_tab.num_handle);
         memcpy(analog_handle_table, param->add_attr_tab.handles, sizeof(analog_handle_table));
-        esp_ble_gatts_start_service(analog_handle_table[IDX_SVC]);
+        esp_ble_gatts_start_service(analog_handle_table[ANALOG_SERV]);
       }
     }
     break;
@@ -362,7 +363,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
   /* If event is register event, store the gatts_if for each profile */
   if (event == ESP_GATTS_REG_EVT) {
     if (param->reg.status == ESP_GATT_OK) {
-      devinfo_profile_tab[PROFILE_APP_IDX].gatts_if = gatts_if;
+      gatts_profile_tab[PROFILE_APP_IDX].gatts_if = gatts_if;
     } else {
       ESP_LOGE(GATTS_TABLE_TAG, "reg app failed, app_id %04x, status %d", param->reg.app_id, param->reg.status);
       return;
@@ -373,9 +374,9 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
     int idx;
     for (idx = 0; idx < PROFILE_NUM; idx++) {
       /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
-      if (gatts_if == ESP_GATT_IF_NONE || gatts_if == devinfo_profile_tab[idx].gatts_if) {
-        if (devinfo_profile_tab[idx].gatts_cb) {
-          devinfo_profile_tab[idx].gatts_cb(event, gatts_if, param);
+      if (gatts_if == ESP_GATT_IF_NONE || gatts_if == gatts_profile_tab[idx].gatts_if) {
+        if (gatts_profile_tab[idx].gatts_cb) {
+          gatts_profile_tab[idx].gatts_cb(event, gatts_if, param);
         }
       }
     }

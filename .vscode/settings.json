@@ -21,6 +21,7 @@
     "GATTS",
     "gpio",
     "LOGI",
+    "LOGW",
     "Multisampling",
     "SRCS",
     "txpower",
